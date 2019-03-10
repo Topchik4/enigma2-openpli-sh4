@@ -318,6 +318,7 @@ eDVBUsbAdapter::eDVBUsbAdapter(int nr)
 		goto error;
 	}
 
+#if !defined(__sh__)
 	struct dtv_properties props;
 	struct dtv_property prop[1];
 
@@ -329,6 +330,7 @@ eDVBUsbAdapter::eDVBUsbAdapter(int nr)
 
 	if (ioctl(frontend, FE_GET_PROPERTY, &props) < 0)
 		eDebug("[eDVBUsbAdapter] FE_GET_PROPERTY DTV_ENUM_DELSYS failed %m");
+#endif
 
 	::close(frontend);
 	frontend = -1;
@@ -418,8 +420,10 @@ eDVBUsbAdapter::eDVBUsbAdapter(int nr)
 	ioctl(vtunerFd, VTUNER_SET_NAME, name);
 	ioctl(vtunerFd, VTUNER_SET_TYPE, type);
 	ioctl(vtunerFd, VTUNER_SET_FE_INFO, &fe_info);
+#if !defined(__sh__)
 	if (prop[0].u.buffer.len > 0)
 		ioctl(vtunerFd, VTUNER_SET_DELSYS, prop[0].u.buffer.data);
+#endif
 	ioctl(vtunerFd, VTUNER_SET_HAS_OUTPUTS, "no");
 	ioctl(vtunerFd, VTUNER_SET_ADAPTER, nr);
 
@@ -964,9 +968,10 @@ RESULT eDVBResourceManager::allocateDemux(eDVBRegisteredFrontend *fe, ePtr<eDVBA
 
 	if (i == m_demux.end())
 		return -1;
-
+#if !defined(__sh__)
 	iDVBAdapter *adapter = fe ? fe->m_adapter : m_adapter.begin();
 	int fesource = fe ? fe->m_frontend->getDVBID() : -1;
+#endif
 	ePtr<eDVBRegisteredDemux> unused;
 	uint8_t d, a;
 #if defined(__sh__) // we use our own algo for demux detection
@@ -1067,10 +1072,18 @@ RESULT eDVBResourceManager::allocateDemux(eDVBRegisteredFrontend *fe, ePtr<eDVBA
 	{
 		unused->m_demux->getCAAdapterID(a);
 		unused->m_demux->getCADemuxID(d);
-		eDebug("[eDVBResourceManager] allocating demux adapter=%d, demux=%d, source=%d fesource=%d", a, d, unused->m_demux->getSource(), fesource);
-		demux = new eDVBAllocatedDemux(unused);
+#if defined(__sh__)
+		eDebug("[eDVBResourceManager] allocating demux adapter=%d, demux=%d, source=%d fesource=%d", a, d, unused->m_demux->getSource(), fe ? fe->m_frontend->getDVBID() : -1);
+#else
+        eDebug("[eDVBResourceManager] allocating demux adapter=%d, demux=%d, source=%d fesource=%d", a, d, unused->m_demux->getSource(), fesource);
+#endif
+        demux = new eDVBAllocatedDemux(unused);
 		if (fe)
+#if defined(__sh__)
+            demux->get().setSourceFrontend(fe->m_frontend->getDVBID());
+#else
 			demux->get().setSourceFrontend(fesource);
+#endif
 		else
 			demux->get().setSourcePVR(0);
 		return 0;
