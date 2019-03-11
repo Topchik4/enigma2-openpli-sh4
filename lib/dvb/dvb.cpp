@@ -1075,9 +1075,9 @@ RESULT eDVBResourceManager::allocateDemux(eDVBRegisteredFrontend *fe, ePtr<eDVBA
 #if defined(__sh__)
 		eDebug("[eDVBResourceManager] allocating demux adapter=%d, demux=%d, source=%d fesource=%d", a, d, unused->m_demux->getSource(), fe ? fe->m_frontend->getDVBID() : -1);
 #else
-        eDebug("[eDVBResourceManager] allocating demux adapter=%d, demux=%d, source=%d fesource=%d", a, d, unused->m_demux->getSource(), fesource);
+		eDebug("[eDVBResourceManager] allocating demux adapter=%d, demux=%d, source=%d fesource=%d", a, d, unused->m_demux->getSource(), fesource);
 #endif
-        demux = new eDVBAllocatedDemux(unused);
+		demux = new eDVBAllocatedDemux(unused);
 		if (fe)
 #if defined(__sh__)
             demux->get().setSourceFrontend(fe->m_frontend->getDVBID());
