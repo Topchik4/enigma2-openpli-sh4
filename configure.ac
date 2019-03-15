@@ -29,6 +29,24 @@ TUXBOX_APPS_DVB
 AM_CONDITIONAL(HAVE_GIT_DIR, test -d "$srcdir/.git")
 AM_CONDITIONAL(HAVE_FAKE_GIT_DIR, test -f "$srcdir/.git/last_commit_info")
 
+AC_ARG_ENABLE(spark,
+	[  --enable-spark          enable spark stuff],
+	[AC_DEFINE(ENABLE_SPARK, 1, [enable spark stuff])])
+
+AM_CONDITIONAL(ENABLE_SPARK,test "$enable_spark" = "yes")
+if test "$enable_spark" = "yes"; then
+	AC_DEFINE(ENABLE_SPARK, 1, [enable spark stuff])
+fi
+
+AC_ARG_ENABLE(spark7162,
+	[  --enable-spark7162          enable spark7162 stuff],
+	[AC_DEFINE(ENABLE_SPARK7162, 1, [enable spark7162 stuff])])
+
+AM_CONDITIONAL(ENABLE_SPARK7162,test "$enable_spark7162" = "yes")
+if test "$enable_spark7162" = "yes"; then
+	AC_DEFINE(ENABLE_SPARK7162, 1, [enable spark7162 stuff])
+fi
+
 dnl versions of plugins-base
 PKG_CHECK_MODULES(TUXTXT, tuxbox-tuxtxt)
 PKG_CHECK_MODULES(BASE, [freetype2 fribidi glib-2.0 libdvbsi++ libpng libxml-2.0 sigc++-2.0 libssl libcrypto])
@@ -51,7 +69,7 @@ AC_SUBST(CRASHLOGEMAIL)
 AC_DEFINE_UNQUOTED(CRASH_EMAILADDR,"$CRASHLOGEMAIL",[crash log email address])
 
 AC_ARG_WITH(boxtype,
-	[  --with-boxtype=NAME box type [[none,dm800...]]],
+	[  --with-boxtype=NAME box type [[none,dm7025,dm800...]]],
 	[BOXTYPE="$withval"],[BOXTYPE="dm800"])
 AC_SUBST(BOXTYPE)
 AC_DEFINE_UNQUOTED(BOXTYPE,"$BOXTYPE",[box type])
@@ -141,8 +159,8 @@ AM_CONDITIONAL(UPDATE_PO, test "$with_po" = "yes")
 
 AC_ARG_WITH(alsa,
 	AC_HELP_STRING([--with-alsa], [Enable ALSA support]),
-	[[with_alse=$withval]],
-	[[with_alse=no]]
+	[[with_alsa=$withval]],
+	[[with_alsa=no]]
 )
 if test x"$with_alsa" == xyes ; then
 	AC_DEFINE(HAVE_ALSA, 1,[Enables ALSA support])
@@ -183,6 +201,19 @@ AC_ARG_WITH(lcddev,
 )
 if test x"$with_lcddev" != xno ; then
 	AC_DEFINE_UNQUOTED(LCD_DEV, "$withval", [Defines which device to use for lcd (e.g. /dev/fb1)])
+fi
+
+AC_ARG_WITH(amlogic,
+	AC_HELP_STRING([--with-amlogic], [use amlogic MPEG decoder]),
+	[[with_amlogic=$withval]],
+	[[with_amlogic=no]]
+)
+AM_CONDITIONAL(HAVE_AMLOGIC, test x"$with_amlogic" = xyes)
+if test x"$with_amlogic" = xyes ; then
+	AC_DEFINE(HAVE_AMLOGIC, 1,[Enables AMLOGIC decoder support])
+	PKG_CHECK_MODULES(AMCODEC, libamcodec)
+	PKG_CHECK_MODULES(AMADEC, libamadec)
+	PKG_CHECK_MODULES(DVBCSA, libdvbcsa)
 fi
 
 AC_ARG_WITH(alphablendingacceleration,
@@ -245,7 +276,7 @@ AX_CXX_COMPILE_STDCXX_11([ext],[mandatory])
 
 CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
 CFLAGS="$CFLAGS -Wall"
-CXXFLAGS="$CXXFLAGS -Wall $BASE_CFLAGS $ENIGMA2_CFLAGS $PTHREAD_CFLAGS $OPENMP_CFLAGS $ALSA_CFLAGS"
+CXXFLAGS="$CXXFLAGS -Wall $BASE_CFLAGS $ENIGMA2_CFLAGS $PTHREAD_CFLAGS $OPENMP_CFLAGS $ALSA_CFLAGS $AMCODEC_CFLAGS $AMADEC_CFLAGS $DVBCSA_CFLAGS"
 
 AC_CONFIG_FILES([
 Makefile
